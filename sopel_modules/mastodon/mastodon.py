@@ -59,7 +59,7 @@ def output_status(bot, trigger):
 
     # strip tags out of toot text
     fulltxt = details["content"]
-    uri = details["uri"]
+    url = details["url"]
 
     parser = TootParser()
     parser.feed(fulltxt)
@@ -67,4 +67,4 @@ def output_status(bot, trigger):
 
     summary = txt[:MAXLEN] + ("…" if len(txt) > MAXLEN else "")
 
-    bot.say(f'[Mastodon] @{user}: "{summary}" — {uri}')
+    bot.say(f'[Mastodon] @{user}: "{summary}" — {url}')
