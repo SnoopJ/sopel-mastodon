@@ -7,21 +7,19 @@ import requests
 from sopel import plugin
 
 
-# TODO: this should be configurable
-MASTODON_HOSTS = [
-    "mastodon.social",
-    "hachyderm.io",
-]
 STATUS_REGEX = r"/(?P<user>@(?P<handle>[^@]+)(@(?P<toot_host>[^/]+))?)/(?P<toot_id>\d+)"
-MASTODON_REGEXES = [f"(?P<mastodon_url>https://(?P<host>{host}){STATUS_REGEX})" for host in MASTODON_HOSTS]
+MASTODON_REGEX = f"(?P<mastodon_url>https://(?P<host>.*){STATUS_REGEX})"
 
 
-@plugin.url(*MASTODON_REGEXES)
+@plugin.url(MASTODON_REGEX)
 def url_status(bot, trigger):
     output_status(bot, trigger)
 
 
 def toot_details(toot_instance: str, toot_id: int) -> dict:
+    # TODO: maybe we should send a request with `Accept: application/ld+json; profile="https://www.w3.org/ns/activitystreams"`
+    # instead and pull the relevant data out of the response? The Mastodon API is working fine for now and provides some more
+    # rich information
     response = requests.get(f"https://{toot_instance}/api/v1/statuses/{toot_id}", headers={"Content-Type": "application/json"})
     response.raise_for_status()
     return response.json()
@@ -51,7 +49,10 @@ def output_status(bot, trigger):
     toot_id = trigger.group("toot_id")
     url = trigger.group("mastodon_url")
 
-    details = toot_details(host, toot_id)
+    try:
+        details = toot_details(host, toot_id)
+    except:
+        return False
     user = details["account"]["acct"]
 
     MAXLEN = 200 - len(url)

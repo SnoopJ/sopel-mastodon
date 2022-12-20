@@ -1,0 +1,7 @@
+Changes between 0.1.0 and 0.1.1
+===============================
+
+* Relax URL regex so that a list of Mastodon instance hostnames is not required
+  * Any URL of the form `https://host/@user/12345` or
+    `https://host/@user@homeinstance/12345` is considered as a possible
+    Mastodon URL
