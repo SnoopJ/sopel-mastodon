@@ -4,17 +4,7 @@ import re
 
 import requests
 
-from sopel import plugin, tools
-from sopel.config.types import (
-    BooleanAttribute,
-    ListAttribute,
-    StaticSection,
-    ValidatedAttribute,
-    NO_DEFAULT,
-)
-from sopel.logger import get_logger
-
-logger = get_logger(__name__)
+from sopel import plugin
 
 
 # TODO: this should be configurable
