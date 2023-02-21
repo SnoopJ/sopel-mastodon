@@ -9,9 +9,11 @@ from sopel import plugin
 
 STATUS_REGEX = r"/(?P<user>@(?P<handle>[^@]+)(@(?P<toot_host>[^/]+))?)/(?P<toot_id>\d+)"
 MASTODON_REGEX = f"(?P<mastodon_url>https://(?P<host>.*){STATUS_REGEX})"
+MASTODON_PLUGIN_PREFIX = "[mastodon] "
 
 
 @plugin.url(MASTODON_REGEX)
+@plugin.output_prefix(MASTODON_PLUGIN_PREFIX)
 def url_status(bot, trigger):
     output_status(bot, trigger)
 
@@ -67,4 +69,4 @@ def output_status(bot, trigger):
 
     summary = txt[:MAXLEN] + ("…" if len(txt) > MAXLEN else "")
 
-    bot.say(f'[Mastodon] @{user}: "{summary}" — {url}')
+    bot.say(f'@{user}: "{summary}" — {url}')
