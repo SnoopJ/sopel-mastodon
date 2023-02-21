@@ -56,7 +56,16 @@ def output_status(bot, trigger):
         return False
     user = details["account"]["acct"]
 
-    MAXLEN = 200 - len(url)
+    MAXLEN = (
+        # maximum length of line sent to server, including command/etc.
+        512 -
+        # whatever it takes to send this PRIVMSG
+        len(f"PRIVMSG {trigger.sender!s} :\r\n") -
+        # allowance for this plugin's prefix
+        len(MASTODON_PLUGIN_PREFIX) -
+        # this calculation should be exact but doesn't seem to be, so here's some arbitrary additional margin
+        42
+    )
 
     # strip tags out of toot text
     fulltxt = details["content"]
@@ -66,6 +75,12 @@ def output_status(bot, trigger):
     parser.feed(fulltxt)
     txt = parser.text.rstrip()
 
-    summary = txt[:MAXLEN] + ("…" if len(txt) > MAXLEN else "")
+    if txt:
+        msg = f'@{user}: «{txt}»'
+    else:
+        msg = f'@{user}'
 
-    bot.say(f'@{user}: "{summary}" — {url}')
+    if len(msg) > MAXLEN:
+        msg = msg[:MAXLEN-3] + "…»"
+
+    bot.say(msg)
