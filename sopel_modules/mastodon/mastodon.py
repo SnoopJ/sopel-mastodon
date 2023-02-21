@@ -34,16 +34,16 @@ class TootParser(HTMLParser):
     def __init__(self):
         super().__init__()
 
-        self.stripped = ""
+        self.text = ""
 
     def handle_endtag(self, tag):
         # toots include plenty of <p> tags, notably to separate URLs from the rest of the text
         # a simple way to make this look nice on IRC is to stick a space in at the end of a 'paragraph'
         if tag == "p":
-            self.stripped += " "
+            self.text += " "
 
     def handle_data(self, data):
-        self.stripped += data
+        self.text += data
 
 
 def output_status(bot, trigger):
@@ -65,7 +65,7 @@ def output_status(bot, trigger):
 
     parser = TootParser()
     parser.feed(fulltxt)
-    txt = parser.stripped
+    txt = parser.text.rstrip()
 
     summary = txt[:MAXLEN] + ("…" if len(txt) > MAXLEN else "")
 
