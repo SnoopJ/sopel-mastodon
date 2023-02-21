@@ -19,12 +19,11 @@ def url_status(bot, trigger):
 
 
 def toot_details(toot_instance: str, toot_id: int) -> dict:
-    # TODO: maybe we should send a request with `Accept: application/ld+json; profile="https://www.w3.org/ns/activitystreams"`
-    # instead and pull the relevant data out of the response? The Mastodon API is working fine for now and provides some more
-    # rich information
-    response = requests.get(f"https://{toot_instance}/api/v1/statuses/{toot_id}", headers={"Content-Type": "application/json"})
+    response = requests.get(f"https://{toot_instance}/api/v1/statuses/{toot_id}", headers={"Accept": 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'})
     response.raise_for_status()
-    return response.json()
+    details = response.json()
+
+    return details
 
 
 class TootParser(HTMLParser):
