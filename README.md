@@ -17,5 +17,5 @@ Just send a link to a toot!
 
 ```irc
 <SnoopJ> check out this toot: https://mastodon.social/@Gargron/1
-<terribot> [Mastodon] @Gargron: "Hello world " — https://mastodon.social/users/Gargron/statuses/1
+<terribot> [mastodon] @Gargron: «Hello world»
 ```
