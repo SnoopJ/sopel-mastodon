@@ -1,4 +1,5 @@
 # coding=utf-8
+from collections import namedtuple
 from html.parser import HTMLParser
 import re
 
@@ -15,7 +16,17 @@ MASTODON_PLUGIN_PREFIX = "[mastodon] "
 @plugin.url(MASTODON_REGEX)
 @plugin.output_prefix(MASTODON_PLUGIN_PREFIX)
 def url_status(bot, trigger):
-    output_status(bot, trigger)
+    status = get_status_parts(trigger)
+
+    if not status:
+        # silently fail
+        # TODO: *maybe* log this? don't want IRC output
+        return
+
+    if status.text:
+        bot.say(f'@{status.user}: «{status.text}', truncation='…', trailing='»')
+    else:
+        bot.say(f'@{status.user}')
 
 
 def toot_details(toot_instance: str, toot_id: int) -> dict:
@@ -45,7 +56,11 @@ class TootParser(HTMLParser):
         self.text += data
 
 
-def output_status(bot, trigger):
+ParsedToot = namedtuple('ParsedToot', ['user', 'text'])
+"""Helper type that holds the fields of a parsed toot"""
+
+
+def get_status_parts(trigger) -> namedtuple:
     host = trigger.group("host")
     toot_id = trigger.group("toot_id")
     url = trigger.group("mastodon_url")
@@ -53,19 +68,9 @@ def output_status(bot, trigger):
     try:
         details = toot_details(host, toot_id)
     except:
-        return False
-    user = details["account"]["acct"]
+        return ()
 
-    MAXLEN = (
-        # maximum length of line sent to server, including command/etc.
-        512 -
-        # whatever it takes to send this PRIVMSG
-        len(f"PRIVMSG {trigger.sender!s} :\r\n") -
-        # allowance for this plugin's prefix
-        len(MASTODON_PLUGIN_PREFIX) -
-        # this calculation should be exact but doesn't seem to be, so here's some arbitrary additional margin
-        42
-    )
+    user = details["account"]["acct"]
 
     # strip tags out of toot text
     fulltxt = details["content"]
@@ -75,12 +80,4 @@ def output_status(bot, trigger):
     parser.feed(fulltxt)
     txt = parser.text.rstrip()
 
-    if txt:
-        msg = f'@{user}: «{txt}»'
-    else:
-        msg = f'@{user}'
-
-    if len(msg) > MAXLEN:
-        msg = msg[:MAXLEN-3] + "…»"
-
-    bot.say(msg)
+    return ParsedToot(user=user, text=txt)
