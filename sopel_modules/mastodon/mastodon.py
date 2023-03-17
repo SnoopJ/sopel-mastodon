@@ -72,12 +72,23 @@ def get_status_parts(trigger) -> namedtuple:
 
     user = details["account"]["acct"]
 
-    # strip tags out of toot text
-    fulltxt = details["content"]
-    url = details["url"]
+    fulltxt = details.get("content", "")
+
+    attachments = details.get("media_attachments", [])
+    N_attached = len(attachments)
+    if N_attached == 1:
+        attach_msg = "[attachment] "
+    elif N_attached > 1:
+        attach_msg = f"[{N_attached} attachments] "
+    else:
+        attach_msg = ""
 
     parser = TootParser()
     parser.feed(fulltxt)
     txt = parser.text.rstrip()
 
-    return ParsedToot(user=user, text=txt)
+    msg = f"@{user}: {attach_msg}"
+    if txt:
+        msg += " «{txt}»"
+
+    return ParsedToot(user=user, text=msg)
