@@ -89,6 +89,6 @@ def get_status_parts(trigger) -> namedtuple:
 
     msg = f"@{user}: {attach_msg}"
     if txt:
-        msg += " «{txt}»"
+        msg += f" «{txt}»"
 
     return ParsedToot(user=user, text=msg)
