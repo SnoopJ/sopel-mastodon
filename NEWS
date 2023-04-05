@@ -1,3 +1,11 @@
+Changes between 0.1.1 and 1.0.0
+===============================
+
+* Convert to entry-point plugin (courtesy dgw)
+* Indicate attachments to a toot
+* Use Sopel's built-in long-message truncation features
+* Use as much of an IRC message as possible when summarizing a toot
+
 Changes between 0.1.0 and 0.1.1
 ===============================
 
