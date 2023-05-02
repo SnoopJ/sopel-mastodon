@@ -23,10 +23,17 @@ def url_status(bot, trigger):
         # TODO: *maybe* log this? don't want IRC output
         return
 
-    if status.text:
-        bot.say(f'@{status.user}: «{status.text}', truncation='…', trailing='»')
+    if status.num_attachments == 1:
+        attach_msg = " [attachment] "
+    elif status.num_attachments > 1:
+        attach_msg = f" [{status.num_attachments} attachments] "
     else:
-        bot.say(f'@{status.user}')
+        attach_msg = " "
+
+    if status.text:
+        bot.say(f'@{status.user}:{attach_msg}«{status.text}', truncation='…', trailing='»')
+    else:
+        bot.say(f'@{status.user}{attach_msg}')
 
 
 def toot_details(toot_instance: str, toot_id: int) -> dict:
@@ -56,7 +63,7 @@ class TootParser(HTMLParser):
         self.text += data
 
 
-ParsedToot = namedtuple('ParsedToot', ['user', 'text'])
+ParsedToot = namedtuple('ParsedToot', ['user', 'text', 'num_attachments'])
 """Helper type that holds the fields of a parsed toot"""
 
 
@@ -75,20 +82,9 @@ def get_status_parts(trigger) -> namedtuple:
     fulltxt = details.get("content", "")
 
     attachments = details.get("media_attachments", [])
-    N_attached = len(attachments)
-    if N_attached == 1:
-        attach_msg = "[attachment] "
-    elif N_attached > 1:
-        attach_msg = f"[{N_attached} attachments] "
-    else:
-        attach_msg = ""
 
     parser = TootParser()
     parser.feed(fulltxt)
     txt = parser.text.rstrip()
 
-    msg = f"@{user}: {attach_msg}"
-    if txt:
-        msg += f" «{txt}»"
-
-    return ParsedToot(user=user, text=msg)
+    return ParsedToot(user=user, text=txt, num_attachments=len(attachments))
