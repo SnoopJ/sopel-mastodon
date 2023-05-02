@@ -49,7 +49,7 @@ class TootParser(HTMLParser):
     def handle_endtag(self, tag):
         # toots include plenty of <p> tags, notably to separate URLs from the rest of the text
         # a simple way to make this look nice on IRC is to stick a space in at the end of a 'paragraph'
-        if tag == "p":
+        if tag == "p" or tag == "br":
             self.text += " "
 
     def handle_data(self, data):
