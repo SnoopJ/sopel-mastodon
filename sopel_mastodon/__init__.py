@@ -6,6 +6,7 @@ import re
 import requests
 
 from sopel import plugin
+from sopel.tools import get_logger
 
 
 STATUS_REGEX = r"/(?P<user>@(?P<handle>[^@]+)(@(?P<toot_host>[^/]+))?)/(?P<toot_id>\d+)"
@@ -13,14 +14,23 @@ MASTODON_REGEX = f"(?P<mastodon_url>https://(?P<host>.*){STATUS_REGEX})"
 MASTODON_PLUGIN_PREFIX = "[mastodon] "
 
 
+LOGGER = get_logger(__name__)
+
+
 @plugin.url(MASTODON_REGEX)
 @plugin.output_prefix(MASTODON_PLUGIN_PREFIX)
 def url_status(bot, trigger):
-    host = trigger.group("host")
-    toot_id = trigger.group("toot_id")
-    url = trigger.group("mastodon_url")
+    try:
+        host = trigger.group("host")
+        toot_id = trigger.group("toot_id")
+        url = trigger.group("mastodon_url")
 
-    status = mastodon_status_parts(host=host, toot_id=toot_id, url=url)
+        status = mastodon_status_parts(host=host, toot_id=toot_id, url=url)
+    except requests.exceptions.HTTPError:
+        LOGGER.debug("Unauthorized for url: %r", url)
+    except Exception as exc:
+        LOGGER.debug("Failed to retrieve status details for %r. Exception details:", url, exc_info=True)
+        return False
 
     if status.num_attachments == 1:
         attach_msg = " [attachment] "
