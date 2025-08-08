@@ -16,12 +16,11 @@ MASTODON_PLUGIN_PREFIX = "[mastodon] "
 @plugin.url(MASTODON_REGEX)
 @plugin.output_prefix(MASTODON_PLUGIN_PREFIX)
 def url_status(bot, trigger):
-    status = get_status_parts(trigger)
+    host = trigger.group("host")
+    toot_id = trigger.group("toot_id")
+    url = trigger.group("mastodon_url")
 
-    if not status:
-        # silently fail
-        # TODO: *maybe* log this? don't want IRC output
-        return
+    status = mastodon_status_parts(host=host, toot_id=toot_id, url=url)
 
     if status.num_attachments == 1:
         attach_msg = " [attachment] "
@@ -67,16 +66,8 @@ ParsedToot = namedtuple('ParsedToot', ['user', 'text', 'num_attachments'])
 """Helper type that holds the fields of a parsed toot"""
 
 
-def get_status_parts(trigger) -> namedtuple:
-    host = trigger.group("host")
-    toot_id = trigger.group("toot_id")
-    url = trigger.group("mastodon_url")
-
-    try:
-        details = toot_details(host, toot_id)
-    except:
-        return ()
-
+def mastodon_status_parts(host: str, toot_id: str, url: str) -> namedtuple:
+    details = toot_details(host, toot_id)
     user = details["account"]["acct"]
 
     fulltxt = details.get("content", "")
