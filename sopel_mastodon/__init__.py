@@ -48,7 +48,10 @@ def url_status(bot, trigger):
 def toot_details(toot_instance: str, toot_id: int) -> dict:
     response = requests.get(
         f"https://{toot_instance}/api/v1/statuses/{toot_id}",
-        headers={"Accept": 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"'},
+        headers={
+            "Accept": 'application/ld+json; profile="https://www.w3.org/ns/activitystreams"',
+            "User-Agent": "sopel-mastodon v1.0.0",
+        },
     )
     response.raise_for_status()
     details = response.json()
