@@ -34,7 +34,10 @@ def url_status(bot, trigger):
         return False
 
     if status.num_attachments == 1:
-        attach_msg = " [attachment] "
+        if status.description:
+            attach_msg = f" [attachment]: {status.description}"
+        else:
+            attach_msg = " [attachment] "
     elif status.num_attachments > 1:
         attach_msg = f" [{status.num_attachments} attachments] "
     else:
@@ -43,7 +46,7 @@ def url_status(bot, trigger):
     if status.text:
         bot.say(f'@{status.user}:{attach_msg}«{status.text}', truncation='…', trailing='»')
     else:
-        bot.say(f'@{status.user}{attach_msg}')
+        bot.say(f'@{status.user}{attach_msg}', truncation='…')
 
 
 def toot_details(toot_instance: str, toot_id: int) -> dict:
@@ -79,7 +82,7 @@ class TootParser(HTMLParser):
         self.text += data
 
 
-ParsedToot = namedtuple('ParsedToot', ['user', 'text', 'num_attachments'])
+ParsedToot = namedtuple('ParsedToot', ['user', 'text', 'num_attachments', 'description'])
 """Helper type that holds the fields of a parsed toot"""
 
 
@@ -90,9 +93,13 @@ def mastodon_status_parts(host: str, toot_id: str, url: str) -> namedtuple:
     fulltxt = details.get("content", "")
 
     attachments = details.get("media_attachments", [])
+    if not fulltxt and attachments:
+        description = attachments[0].get("description").replace("\n", " ")
+    else:
+        description = None
 
     parser = TootParser()
     parser.feed(fulltxt)
     txt = parser.text.rstrip()
 
-    return ParsedToot(user=user, text=txt, num_attachments=len(attachments))
+    return ParsedToot(user=user, text=txt, num_attachments=len(attachments), description=description)
