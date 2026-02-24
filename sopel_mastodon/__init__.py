@@ -28,6 +28,7 @@ def url_status(bot, trigger):
         status = mastodon_status_parts(host=host, toot_id=toot_id, url=url)
     except requests.exceptions.HTTPError:
         LOGGER.debug("Unauthorized for url: %r", url)
+        return False
     except Exception as exc:
         LOGGER.debug("Failed to retrieve status details for %r. Exception details:", url, exc_info=True)
         return False
